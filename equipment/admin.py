@@ -10,6 +10,6 @@ class CameraAdmin(admin.ModelAdmin):
 
 @admin.register(Lens)
 class LensAdmin(admin.ModelAdmin):
-    list_display = ("id", "model", "camera", "user", "created_at")
+    list_display = ("id", "model", "user", "created_at")
     list_filter = ("created_at",)
-    search_fields = ("model", "camera__model", "user__username")
+    search_fields = ("model", "cameras__model", "user__username")

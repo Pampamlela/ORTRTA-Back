@@ -3,11 +3,12 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from .models import Camera, Lens
 from .serializers import CameraSerializer, LensSerializer
+from .permissions import IsOwner
 # Create your views here.
 
 class CameraViewSet(viewsets.ModelViewSet):
     serializer_class = CameraSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner]
 
     def get_queryset(self):
         return Camera.objects.filter(user=self.request.user)
@@ -17,7 +18,7 @@ class CameraViewSet(viewsets.ModelViewSet):
 
 class LensViewSet(viewsets.ModelViewSet):
     serializer_class = LensSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner]
 
     def get_queryset(self):
         return Lens.objects.filter(user=self.request.user)

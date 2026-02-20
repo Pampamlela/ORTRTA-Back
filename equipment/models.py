@@ -21,11 +21,12 @@ class Lens(models.Model):
           on_delete=models.CASCADE, 
           related_name="lenses"
     )
-    camera = models.ForeignKey(
-        Camera,
-          on_delete=models.CASCADE, 
-          related_name="lenses"
-    )
+    # camera = models.ForeignKey(
+    #     Camera,
+    #       on_delete=models.CASCADE, 
+    #       related_name="lenses"
+    # )
+    cameras = models.ManyToManyField(Camera)
     model = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
