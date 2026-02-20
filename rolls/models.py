@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from django.utils.text import slugify
+from django.utils.crypto import get_random_string
 # Create your models here.
 
 class RollStatus(models.TextChoices):
@@ -21,7 +23,7 @@ class Roll(models.Model):
     )
     lens = models.ForeignKey(
         "equipment.Lens",
-          on_delete=models.CASCADE, 
+          on_delete=models.SET_NULL, 
           related_name="rolls",
           null=True, 
           blank=True
@@ -40,12 +42,19 @@ class Roll(models.Model):
         choices=RollStatus.choices,
         default=RollStatus.IN_PROGRESS
     )
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.film_name)
+            random_part = get_random_string(6)
+            self.slug = f"{base_slug}-{random_part}"
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.film_name}"
+        return f"{self.film_name} ({self.user.username})"
     
 class PhotoProvider(models.TextChoices):
     FLICKR = "FLICKR", "Flickr"
