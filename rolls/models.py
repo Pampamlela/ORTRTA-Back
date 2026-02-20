@@ -46,3 +46,29 @@ class Roll(models.Model):
 
     def __str__(self):
         return f"{self.film_name}"
+    
+class PhotoProvider(models.TextChoices):
+    FLICKR = "FLICKR", "Flickr"
+    GOOGLE_PHOTOS = "GOOGLE_PHOTOS", "Google Photos"
+    GOOGLE_DRIVE = "GOOGLE_DRIVE", "Google Drive"
+    SITE = "SITE", "Site personnel"
+    OTHER = "OTHER", "Autre"
+    
+class UrlPhoto(models.Model):
+    roll = models.ForeignKey(
+        Roll,
+          on_delete=models.CASCADE, 
+          related_name="photos"
+    )
+    url = models.URLField()
+    provider = models.CharField(
+        max_length=20,
+        choices=PhotoProvider.choices,
+        default=PhotoProvider.OTHER
+    )
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.url}"
