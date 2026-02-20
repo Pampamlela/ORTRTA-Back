@@ -1,0 +1,27 @@
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import RefreshToken
+from .models import User
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "first_name"]
+
+
+User = get_user_model()
+
+class SignupSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True) # password jamais renvoyé
+
+    class Meta:
+        model = User
+        fields = ["username", "email", "password"]
+
+    def create(self, validated_data): # hash automatique du mot de passe
+        user = User.objects.create_user(
+            username=validated_data["username"],
+            email=validated_data["email"],
+            password=validated_data["password"]
+        )
+        return user
