@@ -44,7 +44,6 @@ class Roll(models.Model):
         editable=False
     )
     slug = models.SlugField(unique=True, blank=True)
-    qr_code = models.ImageField(upload_to="qr_codes/", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -65,6 +64,7 @@ class Roll(models.Model):
             self.slug = f"{base_slug}-{random_part}"
         self.update_status()
         super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f"{self.film_name} ({self.user.username})"

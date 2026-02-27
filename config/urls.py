@@ -24,6 +24,8 @@ from rest_framework_simplejwt.views import (
 from rolls.views import RollViewSet, UrlPhotoViewSet
 from equipment.views import CameraViewSet, LensViewSet
 from users.views import MeView, SignupView
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 router = DefaultRouter()
@@ -40,3 +42,5 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/signup/', SignupView.as_view(), name='signup'),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
