@@ -40,17 +40,29 @@ class Roll(models.Model):
     status = models.CharField(
         max_length=20,
         choices=RollStatus.choices,
-        default=RollStatus.IN_PROGRESS
+        default=RollStatus.IN_PROGRESS,
+        editable=False
     )
     slug = models.SlugField(unique=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def update_status(self):
+        if self.date_scan:
+            self.status = RollStatus.SCANNED
+        elif self.date_development:
+            self.status = RollStatus.DEVELOPED
+        elif self.date_end:
+            self.status = RollStatus.FINISHED
+        else:
+            self.status = RollStatus.IN_PROGRESS
 
     def save(self, *args, **kwargs):
         if not self.slug:
             base_slug = slugify(self.film_name)
             random_part = get_random_string(6)
             self.slug = f"{base_slug}-{random_part}"
+        self.update_status()
         super().save(*args, **kwargs)
 
     def __str__(self):

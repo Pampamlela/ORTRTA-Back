@@ -33,6 +33,7 @@ class RollSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "user",
             "slug",
+            "status",
             "created_at",
             "updated_at",
         )
@@ -56,5 +57,35 @@ class RollSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
             "You cannot use a lens that is not yours."
         )
+
+        date_start = data.get("date_start")
+        date_end = data.get("date_end")
+        date_development = data.get("date_development")
+        date_scan = data.get("date_scan")
+
+        # Cas update (PATCH) → récupérer les anciennes valeurs
+        instance = getattr(self, "instance", None)
+
+        if instance:
+            date_start = date_start or instance.date_start
+            date_end = date_end or instance.date_end
+            date_development = date_development or instance.date_development
+            date_scan = date_scan or instance.date_scan
+        
+        # règles chronologiques
+        if date_end and date_end < date_start:
+            raise serializers.ValidationError(
+                "The end date cannot be before the start date."
+            )
+        
+        if date_development and date_end and date_development < date_end:
+            raise serializers.ValidationError(
+                "The development date cannot be before the end date."
+            )
+
+        if date_scan and date_development and date_scan < date_development:
+            raise serializers.ValidationError(
+                "The scan date cannot be before the development date."
+            )
 
         return data
