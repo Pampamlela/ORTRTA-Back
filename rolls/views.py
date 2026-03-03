@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticated
-from .models import Roll, UrlPhoto
+from rest_framework.exceptions import ValidationError
+from .models import Roll, UrlPhoto, RollStatus
 from .serializers import RollSerializer, UrlPhotoSerializer
 from.permissions import IsOwner, IsRollOwner
 from django_filters.rest_framework import DjangoFilterBackend
@@ -46,6 +47,28 @@ class RollViewSet(viewsets.ModelViewSet):
         qr.save(buffer, format="PNG")
 
         return HttpResponse(buffer.getvalue(), content_type="image/png")
+    
+    def perform_update(self, serializer):
+        roll = self.get_object()
+        if roll.status == RollStatus.SCANNED:
+            allowed_fields = {"date_scan", "description"}
+
+            # champs envoyés dans la requête
+            incoming_fields = set(serializer.validated_data.keys())
+
+            # si un champ interdit est modifié
+            if not incoming_fields.issubset(allowed_fields):
+                raise ValidationError(
+                    "Cette pellicule est scannée."
+                    "Seul les champs 'date_scan' et 'description' peuvent être modifiés."
+                )
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.status == RollStatus.SCANNED:
+            raise ValidationError("Cette pellicule est scannée et ne peut plus être supprimée.")
+        instance.delete()
+        
 
 class UrlPhotoViewSet(viewsets.ModelViewSet):
     serializer_class = UrlPhotoSerializer
