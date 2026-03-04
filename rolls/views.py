@@ -37,7 +37,7 @@ class RollViewSet(viewsets.ModelViewSet):
 
     # génération des QrCodes pour chaque roll
     @action(detail=True, methods=["get"])
-    def qr(self, request, pk=None):
+    def qr(self, request, *args, **kwargs):
         roll = self.get_object()
 
         url = f"{settings.FRONTEND_URL}/rolls/{roll.slug}/"
