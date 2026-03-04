@@ -137,3 +137,103 @@ class RollAPITestCase(APITestCase):
         self.assertEqual(response["Content-Type"], "image/png")
         self.assertTrue(len(response.content) > 0)
         self.assertTrue(response.content.startswith(b"\x89PNG"))
+
+    # test impossibilité de supprimer la pellicule d'un autre utilisateurice
+    def test_cannot_delete_other_user_roll(self):
+        other_user = User.objects.create_user(
+            username="otheruser",
+            email="otheruser@example.com",
+            password="otherpassword"
+        )
+
+        roll = Roll.objects.create(
+            user=other_user,
+            camera=self.camera,
+            film_name="Kodak Tri-X 400",
+            film_type="BLACK_AND_WHITE",
+            iso=400,
+            format="35MM-24",
+            date_start="2026-01-01",
+        )
+
+        response = self.client.delete(f"/api/rolls/{roll.slug}/")
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # test impossibilité de modifier une pellicule d'un autre utilisateurice
+    def test_cannot_patch_other_user_roll(self):
+        other_user = User.objects.create_user(
+            username="otheruser",
+            email="otheruser@example.com",
+            password="otherpassword"
+        )
+
+        roll = Roll.objects.create(
+            user=other_user,
+            camera=self.camera,
+            film_name="Kodak Tri-X 400",
+            film_type="BLACK_AND_WHITE",
+            iso=400,
+            format="35MM-24",
+            date_start="2026-01-01",
+        )
+
+        response = self.client.patch(
+            f"/api/rolls/{roll.slug}/", 
+            {"iso": 800}
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # test impossibilité d'accéder au QR code d'une pellicule d'un autre utilisateurice
+    def test_cannot_access_other_user_qr(self):
+        other_user = User.objects.create_user(
+            username="otheruser",
+            email="otheruser@example.com",
+            password="otherpassword"
+        )
+
+        roll = Roll.objects.create(
+            user=other_user,
+            camera=self.camera,
+            film_name="Kodak Tri-X 400",
+            film_type="COLOR_NEGATIVE",
+            iso=400,
+            format="35MM-24",
+            date_start="2026-01-01",
+        )
+
+        response = self.client.get(f"/api/rolls/{roll.slug}/qr/")
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+    # test impossibilité d'ajouter UrlPhoto sur pellicule d'un autre utilisateurice
+    def test_cannot_add_photo_to_other_user_roll(self):
+        from rolls.models import UrlPhoto
+
+        other_user = User.objects.create_user(
+            username="otheruser",
+            email="otheruser@example.com",
+            password="otherpassword"
+        )
+
+        roll = Roll.objects.create(
+            user=other_user,
+            camera=self.camera,
+            film_name="Kodak Tri-X 400",
+            film_type="COLOR_NEGATIVE",
+            iso=400,
+            format="35MM-24",
+            date_start="2026-01-01",
+        )
+
+        data = {
+            "roll": roll.id,
+            "url": "http://example.com/photo.jpg",
+            "provider": "OTHER"
+        }
+
+        response = self.client.post("/api/photos/", data)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
