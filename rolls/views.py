@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.conf import settings
 from rest_framework import viewsets, filters
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from .models import Roll, UrlPhoto, RollStatus
 from .serializers import RollSerializer, UrlPhotoSerializer
@@ -36,7 +37,7 @@ class RollViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     # génération des QrCodes pour chaque roll
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=["get"], permission_classes=[AllowAny])
     def qr(self, request, *args, **kwargs):
         roll = self.get_object()
 
